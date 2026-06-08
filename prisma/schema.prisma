@@ -1,0 +1,240 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== 認証 =====
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  memberId     String?  @unique
+  member       Member?  @relation(fields: [memberId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("users")
+}
+
+// ===== 共通マスター =====
+model Location {
+  id        String   @id @default(cuid())
+  name      String
+  members   Member[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+
+  @@map("locations")
+}
+
+enum Role {
+  admin
+  trobar
+  gouton
+}
+
+model Member {
+  id         String    @id @default(cuid())
+  name       String
+  locationId String?
+  location   Location? @relation(fields: [locationId], references: [id])
+  role       Role      @default(trobar)
+  user       User?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  createdBy  String?
+
+  posts             Post[]             @relation("PostAuthor")
+  tasks             Task[]             @relation("TaskAssignee")
+  brewingProgresses BrewingProgress[]  @relation("BrewingAssignee")
+  devMemos          ProductDevMemo[]   @relation("DevMemoProposer")
+
+  @@map("members")
+}
+
+model Product {
+  id        String   @id @default(cuid())
+  name      String
+  category  String?
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+
+  posts             Post[]
+  feedbacks         ProductFeedback[]
+  devMemos          ProductDevMemo[]
+  brewingProgresses BrewingProgress[]
+
+  @@map("products")
+}
+
+model Material {
+  id        String   @id @default(cuid())
+  name      String
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+
+  @@map("materials")
+}
+
+// ===== 投稿（共通） =====
+enum PostType {
+  topic        // 今週のトピックス
+  problem      // 困りごと
+  idea         // 改善アイデア
+  shop_status  // 店舗状況(グートン)
+}
+
+enum PostCategory {
+  yokatta_koto   // 良かったこと
+  komari_goto    // 困りごと
+  kokyaku_koe    // 顧客の声
+  shohin_hyoka   // 商品評価
+  kaizen_an      // 改善案
+  shohin_kaihatsu // 商品開発
+}
+
+enum IdeaStatus {
+  shinki     // 新規
+  kentochu   // 検討中
+  saiyo      // 採用
+  horyu      // 保留
+}
+
+model Post {
+  id         String        @id @default(cuid())
+  type       PostType
+  category   PostCategory?
+  title      String
+  body       String
+  status     IdeaStatus?
+  productId  String?
+  product    Product?      @relation(fields: [productId], references: [id])
+  authorId   String?
+  author     Member?       @relation("PostAuthor", fields: [authorId], references: [id])
+  images     PostImage[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  createdBy  String?
+
+  @@map("posts")
+}
+
+model PostImage {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  imageUrl  String
+  createdAt DateTime @default(now())
+  createdBy String?
+
+  @@map("post_images")
+}
+
+// ===== タスク =====
+enum TaskStatus {
+  michakushu // 未着手
+  shinkochu  // 進行中
+  kanryo     // 完了
+}
+
+model Task {
+  id         String     @id @default(cuid())
+  title      String
+  assigneeId String?
+  assignee   Member?    @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  dueDate    DateTime?
+  status     TaskStatus @default(michakushu)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  createdBy  String?
+
+  @@map("tasks")
+}
+
+// ===== トロバール機能 =====
+model ManufacturingCalendar {
+  id                String   @id @default(cuid())
+  month             Int
+  workContent       String
+  requiredPeople    Int?
+  requiredMembers   String?
+  requiredMaterials String?
+  note              String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+
+  @@map("manufacturing_calendar")
+}
+
+enum BrewingStatus {
+  junbichu   // 準備中
+  shikomichu // 仕込み中
+  jukuseichu // 熟成中
+  kansei     // 完成
+}
+
+model BrewingProgress {
+  id         String        @id @default(cuid())
+  productId  String?
+  product    Product?      @relation(fields: [productId], references: [id])
+  startDate  DateTime?
+  assigneeId String?
+  assignee   Member?       @relation("BrewingAssignee", fields: [assigneeId], references: [id])
+  status     BrewingStatus @default(junbichu)
+  comment    String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  createdBy  String?
+
+  @@map("brewing_progress")
+}
+
+// ===== グートン機能 =====
+model ProductFeedback {
+  id                String   @id @default(cuid())
+  productId         String?
+  product           Product? @relation(fields: [productId], references: [id])
+  goodPoint         String?
+  improvementPoint  String?
+  customerComment   String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+
+  @@map("product_feedback")
+}
+
+enum DevMemoStatus {
+  shinki    // 新規
+  kentochu  // 検討中
+  shisakuchu // 試作中
+  saiyo     // 採用
+  fusaiyo   // 不採用
+}
+
+model ProductDevMemo {
+  id              String        @id @default(cuid())
+  ideaName        String
+  proposerId      String?
+  proposer        Member?       @relation("DevMemoProposer", fields: [proposerId], references: [id])
+  reason          String?
+  customerRequest String?
+  relatedProductId String?
+  relatedProduct  Product?      @relation(fields: [relatedProductId], references: [id])
+  status          DevMemoStatus @default(shinki)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  createdBy       String?
+
+  @@map("product_dev_memo")
+}
