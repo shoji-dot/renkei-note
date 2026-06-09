@@ -50,15 +50,6 @@ async function main() {
     });
   }
 
-  // 原料マスター（例）
-  for (const name of ["豚モモ", "塩", "黒胡椒"]) {
-    await prisma.material.upsert({
-      where: { id: `material-${name}` },
-      update: {},
-      create: { id: `material-${name}`, name },
-    });
-  }
-
   console.log("シードデータを投入しました。初期管理者: admin@example.com / changeme123");
 }
 
