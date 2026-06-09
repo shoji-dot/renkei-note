@@ -12,7 +12,7 @@ export async function GET() {
     where: { id: user.id },
     select: {
       smtpUser: true,
-      // smtpPass は返さない
+      smtpPass: true, // 設定済みか確認するためだけに取得（レスポンスには含めない）
       notifyPost: true,
       notifyFeedback: true,
       notifyTask: true,
