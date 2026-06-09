@@ -12,34 +12,30 @@ export default async function TopPage() {
   const thisYear = new Date().getFullYear();
   const thisMonth = new Date().getMonth() + 1;
 
-  const [tasks, shopStatusPosts, topicPosts, problemPosts, ideaPosts, brewing, calendar] = await Promise.all([
-    prisma.task.findMany({
-      where: { status: { not: "kanryo" } },
-      orderBy: { dueDate: "asc" },
-      take: 5,
-      include: { assignee: true },
-    }),
-    prisma.post.findMany({
-      where: { type: "shop_status" },
-      orderBy: { createdAt: "desc" },
-      take: 3,
-      include: { author: true, images: { take: 1 } },
-    }),
-    prisma.post.findMany({ where: { type: "topic" }, orderBy: { createdAt: "desc" }, take: 3, include: { author: true, images: { take: 1 } } }),
-    prisma.post.findMany({ where: { type: "problem" }, orderBy: { createdAt: "desc" }, take: 3, include: { author: true, images: { take: 1 } } }),
-    prisma.post.findMany({ where: { type: "idea" }, orderBy: { createdAt: "desc" }, take: 3, include: { author: true, images: { take: 1 } } }),
-    prisma.brewingProgress.findMany({
-      where: { status: { not: "kansei" } },
-      orderBy: { createdAt: "desc" },
-      take: 3,
-      include: { product: true },
-    }),
-    prisma.manufacturingCalendar.findMany({
-      where: { year: thisYear, month: { gte: thisMonth } },
-      orderBy: { month: "asc" },
-      take: 3,
-    }),
+  const [
+    tasks,
+    shopStatusPosts, shopStatusCount,
+    topicPosts, topicCount,
+    problemPosts, problemCount,
+    ideaPosts, ideaCount,
+    brewing, brewingCount,
+    calendar,
+  ] = await Promise.all([
+    prisma.task.findMany({ where: { status: { not: "kanryo" } }, orderBy: { dueDate: "asc" }, take: 5, include: { assignee: true } }),
+    prisma.post.findMany({ where: { type: "shop_status" }, orderBy: { createdAt: "desc" }, take: 1, include: { author: true, images: { take: 1 } } }),
+    prisma.post.count({ where: { type: "shop_status" } }),
+    prisma.post.findMany({ where: { type: "topic" }, orderBy: { createdAt: "desc" }, take: 1, include: { author: true, images: { take: 1 } } }),
+    prisma.post.count({ where: { type: "topic" } }),
+    prisma.post.findMany({ where: { type: "problem" }, orderBy: { createdAt: "desc" }, take: 1, include: { author: true, images: { take: 1 } } }),
+    prisma.post.count({ where: { type: "problem" } }),
+    prisma.post.findMany({ where: { type: "idea" }, orderBy: { createdAt: "desc" }, take: 1, include: { author: true, images: { take: 1 } } }),
+    prisma.post.count({ where: { type: "idea" } }),
+    prisma.brewingProgress.findMany({ where: { status: { not: "kansei" } }, orderBy: { createdAt: "desc" }, take: 1, include: { product: true } }),
+    prisma.brewingProgress.count({ where: { status: { not: "kansei" } } }),
+    prisma.manufacturingCalendar.findMany({ where: { year: thisYear, month: { gte: thisMonth } }, orderBy: { month: "asc" }, take: 3 }),
   ]);
+
+  const allLabel = (count: number) => count > 0 ? `すべて（${count}件）` : "すべて";
 
   return (
     <div className="space-y-4">
@@ -65,9 +61,7 @@ export default async function TopPage() {
               {tasks.map((t) => (
                 <li key={t.id} className="text-xs border-b pb-1.5 last:border-b-0 last:pb-0">
                   <p className="font-medium line-clamp-2">{t.title}</p>
-                  <p className="text-gray-400 mt-0.5">
-                    {t.assignee?.name ?? "未割当"} ・ {labelOf(TASK_STATUSES, t.status)}
-                  </p>
+                  <p className="text-gray-400 mt-0.5">{t.assignee?.name ?? "未割当"} ・ {labelOf(TASK_STATUSES, t.status)}</p>
                 </li>
               ))}
             </ul>
@@ -78,18 +72,15 @@ export default async function TopPage() {
         <section className="bg-white rounded-xl border p-3 space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-xs text-gray-600">店舗状況</h2>
-            <Link href="/gouton/shop-status" className="text-xs text-gray-400">すべて</Link>
+            <Link href="/gouton/shop-status" className="text-xs text-gray-400">{allLabel(shopStatusCount)}</Link>
           </div>
           {shopStatusPosts.length === 0 ? (
             <p className="text-xs text-gray-400">まだありません</p>
           ) : (
-            <div className="space-y-1.5">
-              {shopStatusPosts.map((p) => (
-                <PostCard key={p.id} id={p.id} type={p.type} category={p.category}
-                  title={p.title} body={p.body} authorName={p.author?.name}
-                  createdAt={p.createdAt} thumbnailUrl={p.images[0]?.imageUrl} compact />
-              ))}
-            </div>
+            <PostCard key={shopStatusPosts[0].id} id={shopStatusPosts[0].id} type={shopStatusPosts[0].type}
+              category={shopStatusPosts[0].category} title={shopStatusPosts[0].title} body={shopStatusPosts[0].body}
+              authorName={shopStatusPosts[0].author?.name} createdAt={shopStatusPosts[0].createdAt}
+              thumbnailUrl={shopStatusPosts[0].images[0]?.imageUrl} compact />
           )}
         </section>
 
@@ -97,18 +88,15 @@ export default async function TopPage() {
         <section className="bg-white rounded-xl border p-3 space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-xs text-gray-600">今週のトピックス</h2>
-            <Link href="/posts/list?type=topic" className="text-xs text-gray-400">すべて</Link>
+            <Link href="/posts/list?type=topic" className="text-xs text-gray-400">{allLabel(topicCount)}</Link>
           </div>
           {topicPosts.length === 0 ? (
             <p className="text-xs text-gray-400">まだありません</p>
           ) : (
-            <div className="space-y-1.5">
-              {topicPosts.map((p) => (
-                <PostCard key={p.id} id={p.id} type={p.type} category={p.category}
-                  title={p.title} body={p.body} authorName={p.author?.name}
-                  createdAt={p.createdAt} thumbnailUrl={p.images[0]?.imageUrl} compact />
-              ))}
-            </div>
+            <PostCard key={topicPosts[0].id} id={topicPosts[0].id} type={topicPosts[0].type}
+              category={topicPosts[0].category} title={topicPosts[0].title} body={topicPosts[0].body}
+              authorName={topicPosts[0].author?.name} createdAt={topicPosts[0].createdAt}
+              thumbnailUrl={topicPosts[0].images[0]?.imageUrl} compact />
           )}
         </section>
 
@@ -116,18 +104,15 @@ export default async function TopPage() {
         <section className="bg-white rounded-xl border p-3 space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-xs text-gray-600">困りごと</h2>
-            <Link href="/posts/list?type=problem" className="text-xs text-gray-400">すべて</Link>
+            <Link href="/posts/list?type=problem" className="text-xs text-gray-400">{allLabel(problemCount)}</Link>
           </div>
           {problemPosts.length === 0 ? (
             <p className="text-xs text-gray-400">まだありません</p>
           ) : (
-            <div className="space-y-1.5">
-              {problemPosts.map((p) => (
-                <PostCard key={p.id} id={p.id} type={p.type} category={p.category}
-                  title={p.title} body={p.body} authorName={p.author?.name}
-                  createdAt={p.createdAt} thumbnailUrl={p.images[0]?.imageUrl} compact />
-              ))}
-            </div>
+            <PostCard key={problemPosts[0].id} id={problemPosts[0].id} type={problemPosts[0].type}
+              category={problemPosts[0].category} title={problemPosts[0].title} body={problemPosts[0].body}
+              authorName={problemPosts[0].author?.name} createdAt={problemPosts[0].createdAt}
+              thumbnailUrl={problemPosts[0].images[0]?.imageUrl} compact />
           )}
         </section>
 
@@ -135,18 +120,15 @@ export default async function TopPage() {
         <section className="bg-white rounded-xl border p-3 space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-xs text-gray-600">改善アイデア</h2>
-            <Link href="/posts/list?type=idea" className="text-xs text-gray-400">すべて</Link>
+            <Link href="/posts/list?type=idea" className="text-xs text-gray-400">{allLabel(ideaCount)}</Link>
           </div>
           {ideaPosts.length === 0 ? (
             <p className="text-xs text-gray-400">まだありません</p>
           ) : (
-            <div className="space-y-1.5">
-              {ideaPosts.map((p) => (
-                <PostCard key={p.id} id={p.id} type={p.type} category={p.category}
-                  title={p.title} body={p.body} status={p.status} authorName={p.author?.name}
-                  createdAt={p.createdAt} thumbnailUrl={p.images[0]?.imageUrl} compact />
-              ))}
-            </div>
+            <PostCard key={ideaPosts[0].id} id={ideaPosts[0].id} type={ideaPosts[0].type}
+              category={ideaPosts[0].category} title={ideaPosts[0].title} body={ideaPosts[0].body}
+              status={ideaPosts[0].status} authorName={ideaPosts[0].author?.name}
+              createdAt={ideaPosts[0].createdAt} thumbnailUrl={ideaPosts[0].images[0]?.imageUrl} compact />
           )}
         </section>
 
@@ -154,25 +136,21 @@ export default async function TopPage() {
         <section className="bg-white rounded-xl border p-3 space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-xs text-gray-600">仕込み進捗</h2>
-            <Link href="/trobar/brewing" className="text-xs text-gray-400">すべて</Link>
+            <Link href="/trobar/brewing" className="text-xs text-gray-400">{allLabel(brewingCount)}</Link>
           </div>
           {brewing.length === 0 ? (
             <p className="text-xs text-gray-400">進行中なし</p>
           ) : (
-            <ul className="space-y-1.5">
-              {brewing.map((it) => (
-                <li key={it.id} className="text-xs border-b pb-1.5 last:border-b-0 last:pb-0">
-                  <p className="font-medium line-clamp-1">
-                    {it.product?.name ?? "商品未指定"}
-                    {it.identificationTag && ` (${it.identificationTag})`}
-                  </p>
-                  <p className="text-gray-400 mt-0.5">
-                    {labelOf(BREWING_STATUSES, it.status)}
-                    {it.agingPeriod ? ` ・ ${it.agingPeriod}` : ""}
-                  </p>
-                </li>
-              ))}
-            </ul>
+            <div className="text-xs">
+              <p className="font-medium line-clamp-1">
+                {brewing[0].product?.name ?? "商品未指定"}
+                {brewing[0].identificationTag && ` (${brewing[0].identificationTag})`}
+              </p>
+              <p className="text-gray-400 mt-0.5">
+                {labelOf(BREWING_STATUSES, brewing[0].status)}
+                {brewing[0].agingPeriod ? ` ・ ${brewing[0].agingPeriod}` : ""}
+              </p>
+            </div>
           )}
         </section>
 
