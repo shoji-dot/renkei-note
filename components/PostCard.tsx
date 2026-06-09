@@ -11,6 +11,7 @@ type PostCardProps = {
   authorName?: string | null;
   createdAt: Date | string;
   thumbnailUrl?: string | null;
+  compact?: boolean;
 };
 
 export default function PostCard({
@@ -23,9 +24,31 @@ export default function PostCard({
   authorName,
   createdAt,
   thumbnailUrl,
+  compact = false,
 }: PostCardProps) {
   const date = new Date(createdAt);
   const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+
+  if (compact) {
+    return (
+      <Link
+        href={`/posts/${id}`}
+        className="block bg-white rounded-xl shadow-sm border hover:shadow-md transition-shadow overflow-hidden"
+      >
+        {thumbnailUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={thumbnailUrl} alt="" className="w-full h-28 object-cover" />
+        )}
+        <div className="p-2">
+          <span className="text-xs px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-600">
+            {labelOf(POST_TYPES, type)}
+          </span>
+          <h3 className="font-medium text-sm mt-1 line-clamp-2">{title}</h3>
+          <p className="text-xs text-gray-400 mt-0.5">{authorName ?? "不明"} ・ {dateStr}</p>
+        </div>
+      </Link>
+    );
+  }
 
   return (
     <Link

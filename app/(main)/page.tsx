@@ -100,7 +100,7 @@ export default async function TopPage() {
           {shopStatusPosts.length === 0 ? (
             <p className="text-sm text-gray-400">まだ投稿がありません</p>
           ) : (
-            <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-2">
               {shopStatusPosts.map((p) => (
                 <PostCard
                   key={p.id}
@@ -183,8 +183,8 @@ export default async function TopPage() {
             {items.length === 0 ? (
               <p className="text-sm text-gray-400">まだ投稿がありません</p>
             ) : (
-              <div className="space-y-2">
-                {items.slice(0, 5).map((p) => (
+              <div className="grid grid-cols-2 gap-2">
+                {items.slice(0, 6).map((p) => (
                   <PostCard
                     key={p.id}
                     id={p.id}
@@ -196,6 +196,7 @@ export default async function TopPage() {
                     authorName={p.author?.name}
                     createdAt={p.createdAt}
                     thumbnailUrl={p.images[0]?.imageUrl}
+                    compact
                   />
                 ))}
               </div>
