@@ -19,6 +19,7 @@ export default function NotificationSettings() {
   const [notifyTask, setNotifyTask] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [showPass, setShowPass] = useState(false);
 
   useEffect(() => {
     fetch("/api/me/notifications")
@@ -80,14 +81,23 @@ export default function NotificationSettings() {
               <span className="ml-2 text-green-600 font-normal">✓ 設定済み</span>
             )}
           </label>
-          <input
-            type="password"
-            value={smtpPass}
-            onChange={(e) => setSmtpPass(e.target.value)}
-            placeholder={settings.smtpConfigured ? "変更する場合のみ入力" : "アプリパスワードを入力"}
-            className="w-full border rounded-lg px-3 py-2 text-base"
-            autoComplete="new-password"
-          />
+          <div className="relative">
+            <input
+              type={showPass ? "text" : "password"}
+              value={smtpPass}
+              onChange={(e) => setSmtpPass(e.target.value)}
+              placeholder={settings.smtpConfigured ? "変更する場合のみ入力" : "アプリパスワードを入力"}
+              className="w-full border rounded-lg px-3 py-2 pr-16 text-base"
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPass(!showPass)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500"
+            >
+              {showPass ? "隠す" : "表示"}
+            </button>
+          </div>
           <p className="text-xs text-gray-400 mt-1">
             Googleアカウント → セキュリティ → 2段階認証 → アプリパスワードで取得できます
           </p>
