@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import { createTransport } from "nodemailer";
 
 type SendNotificationParams = {
   smtpUser: string;
@@ -17,7 +17,7 @@ export async function sendNotification({
 }: SendNotificationParams): Promise<void> {
   if (to.length === 0) return;
 
-  const transporter = nodemailer.createTransport({
+  const transporter = createTransport({
     service: "gmail",
     auth: {
       user: smtpUser,
