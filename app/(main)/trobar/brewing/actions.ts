@@ -14,6 +14,9 @@ export async function createBrewing(formData: FormData) {
   const startDateStr = String(formData.get("startDate") ?? "");
   const assigneeId = String(formData.get("assigneeId") ?? "") || null;
   const comment = String(formData.get("comment") ?? "").trim() || null;
+  const identificationTag = String(formData.get("identificationTag") ?? "").trim() || null;
+  const pigOrigin = String(formData.get("pigOrigin") ?? "").trim() || null;
+  const agingPeriod = String(formData.get("agingPeriod") ?? "").trim() || null;
 
   await prisma.brewingProgress.create({
     data: {
@@ -21,6 +24,9 @@ export async function createBrewing(formData: FormData) {
       startDate: startDateStr ? new Date(startDateStr) : null,
       assigneeId,
       comment,
+      identificationTag,
+      pigOrigin,
+      agingPeriod,
       createdBy: user.memberId ?? user.email,
     },
   });

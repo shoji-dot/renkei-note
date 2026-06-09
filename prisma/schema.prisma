@@ -185,17 +185,20 @@ enum BrewingStatus {
 }
 
 model BrewingProgress {
-  id         String        @id @default(cuid())
-  productId  String?
-  product    Product?      @relation(fields: [productId], references: [id])
-  startDate  DateTime?
-  assigneeId String?
-  assignee   Member?       @relation("BrewingAssignee", fields: [assigneeId], references: [id])
-  status     BrewingStatus @default(junbichu)
-  comment    String?
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-  createdBy  String?
+  id                String        @id @default(cuid())
+  productId         String?
+  product           Product?      @relation(fields: [productId], references: [id])
+  startDate         DateTime?
+  assigneeId        String?
+  assignee          Member?       @relation("BrewingAssignee", fields: [assigneeId], references: [id])
+  status            BrewingStatus @default(junbichu)
+  identificationTag String?       // 識別タグ（例: 2024-001）
+  pigOrigin         String?       // 豚の産地（例: イベリコ、国産）
+  agingPeriod       String?       // 熟成期間（例: 12ヶ月）
+  comment           String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  createdBy         String?
 
   @@map("brewing_progress")
 }

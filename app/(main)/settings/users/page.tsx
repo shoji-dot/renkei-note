@@ -3,6 +3,36 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+function PasswordInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <input
+        type={show ? "text" : "password"}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full border rounded-lg px-3 py-2 text-sm pr-16"
+      />
+      <button
+        type="button"
+        onClick={() => setShow((s) => !s)}
+        className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 px-1"
+      >
+        {show ? "隠す" : "表示"}
+      </button>
+    </div>
+  );
+}
+
 type Member = {
   id: string;
   name: string;
@@ -159,12 +189,10 @@ export default function UsersSettingsPage() {
             </div>
             <div>
               <label className="block text-sm text-gray-600 mb-1">新しいパスワード（変更する場合のみ）</label>
-              <input
-                type="password"
+              <PasswordInput
                 value={editForm.password}
-                onChange={(e) => setEditForm((f) => ({ ...f, password: e.target.value }))}
+                onChange={(v) => setEditForm((f) => ({ ...f, password: v }))}
                 placeholder="入力しない場合は変更しない"
-                className="w-full border rounded-lg px-3 py-2 text-sm"
               />
             </div>
             <div>
@@ -225,12 +253,9 @@ export default function UsersSettingsPage() {
           </div>
           <div>
             <label className="block text-sm text-gray-600 mb-1">パスワード</label>
-            <input
-              type="password"
-              required
+            <PasswordInput
               value={addForm.password}
-              onChange={(e) => setAddForm((f) => ({ ...f, password: e.target.value }))}
-              className="w-full border rounded-lg px-3 py-2 text-sm"
+              onChange={(v) => setAddForm((f) => ({ ...f, password: v }))}
             />
           </div>
           <div>
