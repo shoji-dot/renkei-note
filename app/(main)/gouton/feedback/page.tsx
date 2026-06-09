@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import FeedbackForm from "./FeedbackForm";
+import DeleteFeedbackButton from "./DeleteFeedbackButton";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,10 @@ export default async function FeedbackPage({
       <ul className="space-y-2">
         {items.map((f) => (
           <li key={f.id} className="bg-white rounded-xl border p-3 text-sm space-y-2">
-            <p className="font-medium">{f.product?.name ?? "商品未指定"}</p>
+            <div className="flex items-center justify-between">
+              <p className="font-medium">{f.product?.name ?? "商品未指定"}</p>
+              <DeleteFeedbackButton id={f.id} />
+            </div>
             {f.goodPoint && <p className="text-gray-600">👍 {f.goodPoint}</p>}
             {f.improvementPoint && <p className="text-gray-600">✏️ {f.improvementPoint}</p>}
             {f.customerComment && <p className="text-gray-500">💬 {f.customerComment}</p>}

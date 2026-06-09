@@ -68,17 +68,6 @@ model Product {
   @@map("products")
 }
 
-model Material {
-  id        String   @id @default(cuid())
-  name      String
-  note      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  createdBy String?
-
-  @@map("materials")
-}
-
 // ===== 投稿（共通） =====
 enum PostType {
   topic        // 今週のトピックス

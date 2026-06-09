@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { createCalendarItem } from "./actions";
 import DeleteCalendarButton from "./DeleteCalendarButton";
+import EditCalendarItem from "./EditCalendarItem";
 
 export const dynamic = "force-dynamic";
 
@@ -65,7 +66,7 @@ export default async function CalendarPage({
                 {monthItems.map((it) => (
                   <li key={it.id} className="text-sm border-t pt-2 first:border-t-0 first:pt-0">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="font-medium">{it.workContent}</p>
                         <p className="text-xs text-gray-400">
                           {it.requiredPeople ? `必要人数: ${it.requiredPeople}名 ・ ` : ""}
@@ -73,6 +74,7 @@ export default async function CalendarPage({
                         </p>
                         {it.requiredMaterials && <p className="text-xs text-gray-400">資材: {it.requiredMaterials}</p>}
                         {it.note && <p className="text-xs text-gray-400">備考: {it.note}</p>}
+                        <EditCalendarItem item={it} />
                       </div>
                       <DeleteCalendarButton id={it.id} />
                     </div>

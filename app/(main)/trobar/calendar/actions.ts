@@ -30,6 +30,27 @@ export async function createCalendarItem(formData: FormData) {
   revalidatePath("/trobar/calendar");
 }
 
+export async function updateCalendarItem(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if (!session) return;
+
+  const id = String(formData.get("id") ?? "");
+  const workContent = String(formData.get("workContent") ?? "").trim();
+  if (!id || !workContent) return;
+
+  await prisma.manufacturingCalendar.update({
+    where: { id },
+    data: {
+      workContent,
+      requiredPeople: formData.get("requiredPeople") ? Number(formData.get("requiredPeople")) : null,
+      requiredMembers: String(formData.get("requiredMembers") ?? "").trim() || null,
+      requiredMaterials: String(formData.get("requiredMaterials") ?? "").trim() || null,
+      note: String(formData.get("note") ?? "").trim() || null,
+    },
+  });
+  revalidatePath("/trobar/calendar");
+}
+
 export async function deleteCalendarItem(formData: FormData) {
   const session = await getServerSession(authOptions);
   if (!session) return;
