@@ -32,19 +32,12 @@ model Location {
   @@map("locations")
 }
 
-enum Role {
-  admin
-  trobar
-  gouton
-  both
-}
-
 model Member {
   id         String    @id @default(cuid())
   name       String
   locationId String?
   location   Location? @relation(fields: [locationId], references: [id])
-  role       Role      @default(trobar)
+  role       String    @default("trobar")
   user       User?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
