@@ -8,6 +8,7 @@ const ROLE_LABEL: Record<string, string> = {
   admin: "管理者",
   trobar: "八ヶ岳トロバール",
   gouton: "グートンデリ",
+  both: "八ヶ岳トロバール / グートンデリ",
 };
 
 export default function HeaderNav({
@@ -21,21 +22,33 @@ export default function HeaderNav({
 }) {
   const pathname = usePathname();
 
+  const isTrobar = role === "trobar" || role === "both" || role === "admin";
+  const isGouton = role === "gouton" || role === "both" || role === "admin";
+
+  // 共通（全員）
   const links = [
     { href: "/", label: "ホーム" },
     { href: "/posts/new", label: "投稿する" },
     { href: "/tasks", label: "タスク" },
     { href: "/images", label: "写真" },
+    { href: "/gouton/feedback", label: "商品フィードバック" },
+    { href: "/gouton/dev-memo", label: "商品開発メモ" },
   ];
 
-  if (role === "trobar" || role === "admin") {
+  // 八ヶ岳トロバール
+  if (isTrobar) {
     links.push({ href: "/trobar/calendar", label: "製造カレンダー" });
     links.push({ href: "/trobar/brewing", label: "仕込み進捗" });
   }
-  if (role === "gouton" || role === "admin") {
+
+  // グートンデリ
+  if (isGouton) {
     links.push({ href: "/gouton/shop-status", label: "店舗状況" });
-    links.push({ href: "/gouton/feedback", label: "商品フィードバック" });
-    links.push({ href: "/gouton/dev-memo", label: "商品開発メモ" });
+  }
+
+  // 管理者のみ
+  if (role === "admin") {
+    links.push({ href: "/settings", label: "⚙ 設定" });
   }
 
   return (
