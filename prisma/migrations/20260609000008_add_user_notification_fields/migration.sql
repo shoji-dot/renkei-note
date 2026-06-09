@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "users" ADD COLUMN "smtpUser" TEXT;
+ALTER TABLE "users" ADD COLUMN "smtpPass" TEXT;
+ALTER TABLE "users" ADD COLUMN "notifyPost" BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE "users" ADD COLUMN "notifyFeedback" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "users" ADD COLUMN "notifyTask" BOOLEAN NOT NULL DEFAULT false;
