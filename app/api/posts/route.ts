@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { sendNotification } from "@/lib/mailer";
+import { labelOf, POST_TYPES } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -32,5 +34,58 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  // 通知メール送信（非同期・失敗しても投稿は成功扱い）
+  sendNotificationAsync({ postId: post.id, postTitle: post.title, type, senderId: user.id, senderName: user.name });
+
   return NextResponse.json({ id: post.id });
+}
+
+async function sendNotificationAsync({
+  postId,
+  postTitle,
+  type,
+  senderId,
+  senderName,
+}: {
+  postId: string;
+  postTitle: string;
+  type: string;
+  senderId: string;
+  senderName: string;
+}) {
+  try {
+    // 送信者のSMTP設定を取得
+    const sender = await prisma.user.findUnique({
+      where: { id: senderId },
+      select: { smtpUser: true, smtpPass: true },
+    });
+
+    if (!sender?.smtpUser || !sender?.smtpPass) return; // SMTP未設定なら送信しない
+
+    // 通知ONのユーザー（送信者除く）のメールアドレスを取得
+    const recipients = await prisma.user.findMany({
+      where: {
+        notifyPost: true,
+        id: { not: senderId },
+        email: { not: "" },
+      },
+      select: { email: true },
+    });
+
+    if (recipients.length === 0) return;
+
+    const typeLabel = labelOf(POST_TYPES, type);
+    const subject = `【連携ノート】${senderName}さんが投稿しました`;
+    const text = `${senderName}さんが新しい投稿をしました。\n\n種類：${typeLabel}\nタイトル：${postTitle}\n\nアプリで確認する:\nhttps://renkei-note.up.railway.app/posts/${postId}`;
+
+    await sendNotification({
+      smtpUser: sender.smtpUser,
+      smtpPass: sender.smtpPass,
+      to: recipients.map((r) => r.email),
+      subject,
+      text,
+    });
+  } catch (err) {
+    console.error("通知メール送信エラー:", err);
+  }
 }

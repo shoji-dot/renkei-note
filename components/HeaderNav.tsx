@@ -32,6 +32,7 @@ export default function HeaderNav({
     { href: "/tasks", label: "タスク" },
     { href: "/images", label: "写真" },
     { href: "/gouton/feedback", label: "商品フィードバック" },
+    { href: "/my-settings", label: "🔔 通知設定" },
   ];
 
   // 八ヶ岳トロバール
