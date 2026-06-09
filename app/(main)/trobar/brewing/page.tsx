@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { createBrewing } from "./actions";
 import StatusSelect from "./StatusSelect";
+import DeleteBrewingButton from "./DeleteBrewingButton";
 
 export const dynamic = "force-dynamic";
 
@@ -72,7 +73,10 @@ export default async function BrewingPage({
                   </span>
                 )}
               </p>
-              <StatusSelect id={it.id} status={it.status} />
+              <div className="flex items-center gap-1 shrink-0">
+                <StatusSelect id={it.id} status={it.status} />
+                <DeleteBrewingButton id={it.id} />
+              </div>
             </div>
             {(it.pigOrigin || it.agingPeriod) && (
               <p className="text-xs text-gray-500">

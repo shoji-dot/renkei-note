@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { createTask } from "./actions";
 import TaskStatusSelect from "./TaskStatusSelect";
+import DeleteTaskButton from "./DeleteTaskButton";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,10 @@ export default async function TasksPage() {
                 {t.dueDate ? ` ・ 期限 ${new Date(t.dueDate).getMonth() + 1}/${new Date(t.dueDate).getDate()}` : ""}
               </p>
             </div>
-            <TaskStatusSelect id={t.id} status={t.status} />
+            <div className="flex items-center gap-1 shrink-0">
+              <TaskStatusSelect id={t.id} status={t.status} />
+              <DeleteTaskButton id={t.id} />
+            </div>
           </li>
         ))}
         {tasks.length === 0 && <p className="text-sm text-gray-400">タスクはまだありません</p>}

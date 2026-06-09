@@ -39,3 +39,10 @@ export async function updateBrewingStatus(id: string, status: string) {
   await prisma.brewingProgress.update({ where: { id }, data: { status: status as any } });
   revalidatePath("/trobar/brewing");
 }
+
+export async function deleteBrewing(id: string) {
+  const session = await getServerSession(authOptions);
+  if (!session) return;
+  await prisma.brewingProgress.delete({ where: { id } });
+  revalidatePath("/trobar/brewing");
+}
