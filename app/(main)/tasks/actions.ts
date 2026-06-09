@@ -33,6 +33,20 @@ export async function updateTaskStatus(id: string, status: "michakushu" | "shink
   revalidatePath("/tasks");
 }
 
+export async function updateTask(id: string, data: { title: string; assigneeId: string | null; dueDate: string | null }) {
+  const session = await getServerSession(authOptions);
+  if (!session) return;
+  await prisma.task.update({
+    where: { id },
+    data: {
+      title: data.title,
+      assigneeId: data.assigneeId || null,
+      dueDate: data.dueDate ? new Date(data.dueDate) : null,
+    },
+  });
+  revalidatePath("/tasks");
+}
+
 export async function deleteTask(id: string) {
   const session = await getServerSession(authOptions);
   if (!session) return;

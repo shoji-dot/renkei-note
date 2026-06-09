@@ -1,11 +1,16 @@
 import { prisma } from "@/lib/db";
+import { requireSession } from "@/lib/session";
 import { createTask } from "./actions";
 import TaskStatusSelect from "./TaskStatusSelect";
 import DeleteTaskButton from "./DeleteTaskButton";
+import EditTaskItem from "./EditTaskItem";
 
 export const dynamic = "force-dynamic";
 
 export default async function TasksPage() {
+  const session = await requireSession();
+  const user = session.user as any;
+
   const [tasks, members] = await Promise.all([
     prisma.task.findMany({ orderBy: [{ status: "asc" }, { dueDate: "asc" }], include: { assignee: true } }),
     prisma.member.findMany({ orderBy: { name: "asc" } }),
@@ -37,18 +42,28 @@ export default async function TasksPage() {
 
       <ul className="space-y-2">
         {tasks.map((t) => (
-          <li key={t.id} className="bg-white rounded-xl border p-3 flex items-center justify-between gap-2">
-            <div className="min-w-0">
-              <p className="font-medium truncate">{t.title}</p>
-              <p className="text-xs text-gray-400">
-                {t.assignee?.name ?? "未割当"}
-                {t.dueDate ? ` ・ 期限 ${new Date(t.dueDate).getMonth() + 1}/${new Date(t.dueDate).getDate()}` : ""}
-              </p>
+          <li key={t.id} className="bg-white rounded-xl border p-3 space-y-1">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-medium truncate">{t.title}</p>
+                <p className="text-xs text-gray-400">
+                  {t.assignee?.name ?? "未割当"}
+                  {t.dueDate ? ` ・ 期限 ${new Date(t.dueDate).getMonth() + 1}/${new Date(t.dueDate).getDate()}` : ""}
+                </p>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <TaskStatusSelect id={t.id} status={t.status} />
+                {(t.createdBy === user.memberId || user.role === "admin") && (
+                  <DeleteTaskButton id={t.id} />
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-1 shrink-0">
-              <TaskStatusSelect id={t.id} status={t.status} />
-              <DeleteTaskButton id={t.id} />
-            </div>
+            {(t.createdBy === user.memberId || user.role === "admin") && (
+              <EditTaskItem
+                task={{ id: t.id, title: t.title, assigneeId: t.assigneeId, dueDate: t.dueDate }}
+                members={members}
+              />
+            )}
           </li>
         ))}
         {tasks.length === 0 && <p className="text-sm text-gray-400">タスクはまだありません</p>}

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/session";
 import { POST_TYPES, POST_CATEGORIES, IDEA_STATUSES, labelOf } from "@/lib/types";
@@ -51,7 +52,17 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
           <p className="text-xs text-gray-400">
             投稿者: {post.author?.name ?? "不明"} ・ {date.getFullYear()}/{date.getMonth() + 1}/{date.getDate()}
           </p>
-          {canDelete && <DeleteButton postId={post.id} />}
+          {canDelete && (
+            <div className="flex gap-2">
+              <Link
+                href={`/posts/${post.id}/edit`}
+                className="text-xs px-3 py-1.5 border rounded-lg text-gray-600"
+              >
+                編集
+              </Link>
+              <DeleteButton postId={post.id} />
+            </div>
+          )}
         </div>
       </div>
     </article>

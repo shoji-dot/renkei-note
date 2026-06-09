@@ -1,7 +1,9 @@
 import { prisma } from "@/lib/db";
+import { requireSession } from "@/lib/session";
 import { createBrewing } from "./actions";
 import StatusSelect from "./StatusSelect";
 import DeleteBrewingButton from "./DeleteBrewingButton";
+import EditBrewingItem from "./EditBrewingItem";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +17,9 @@ export default async function BrewingPage({
   const { page } = await searchParams;
   const currentPage = Math.max(1, parseInt(page ?? "1"));
   const take = currentPage * PAGE_SIZE;
+
+  const session = await requireSession();
+  const user = session.user as any;
 
   const [items, total, products, members] = await Promise.all([
     prisma.brewingProgress.findMany({ orderBy: { createdAt: "desc" }, take, include: { product: true, assignee: true } }),
@@ -75,7 +80,9 @@ export default async function BrewingPage({
               </p>
               <div className="flex items-center gap-1 shrink-0">
                 <StatusSelect id={it.id} status={it.status} />
-                <DeleteBrewingButton id={it.id} />
+                {(it.createdBy === user.memberId || user.role === "admin") && (
+                  <DeleteBrewingButton id={it.id} />
+                )}
               </div>
             </div>
             {(it.pigOrigin || it.agingPeriod) && (
@@ -90,6 +97,13 @@ export default async function BrewingPage({
               {it.startDate ? ` ・ 開始 ${new Date(it.startDate).getMonth() + 1}/${new Date(it.startDate).getDate()}` : ""}
             </p>
             {it.comment && <p className="text-gray-600">{it.comment}</p>}
+            {(it.createdBy === user.memberId || user.role === "admin") && (
+              <EditBrewingItem
+                item={{ id: it.id, productId: it.productId, identificationTag: it.identificationTag, pigOrigin: it.pigOrigin, agingPeriod: it.agingPeriod, startDate: it.startDate, assigneeId: it.assigneeId, comment: it.comment }}
+                products={products}
+                members={members}
+              />
+            )}
           </li>
         ))}
         {items.length === 0 && <p className="text-sm text-gray-400">まだ登録がありません</p>}

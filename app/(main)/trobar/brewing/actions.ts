@@ -40,6 +40,32 @@ export async function updateBrewingStatus(id: string, status: string) {
   revalidatePath("/trobar/brewing");
 }
 
+export async function updateBrewing(id: string, data: {
+  productId: string | null;
+  identificationTag: string | null;
+  pigOrigin: string | null;
+  agingPeriod: string | null;
+  startDate: string | null;
+  assigneeId: string | null;
+  comment: string | null;
+}) {
+  const session = await getServerSession(authOptions);
+  if (!session) return;
+  await prisma.brewingProgress.update({
+    where: { id },
+    data: {
+      productId: data.productId || null,
+      identificationTag: data.identificationTag || null,
+      pigOrigin: data.pigOrigin || null,
+      agingPeriod: data.agingPeriod || null,
+      startDate: data.startDate ? new Date(data.startDate) : null,
+      assigneeId: data.assigneeId || null,
+      comment: data.comment || null,
+    },
+  });
+  revalidatePath("/trobar/brewing");
+}
+
 export async function deleteBrewing(id: string) {
   const session = await getServerSession(authOptions);
   if (!session) return;

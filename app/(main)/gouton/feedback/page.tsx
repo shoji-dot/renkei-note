@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
+import { requireSession } from "@/lib/session";
 import FeedbackForm from "./FeedbackForm";
 import DeleteFeedbackButton from "./DeleteFeedbackButton";
+import EditFeedbackItem from "./EditFeedbackItem";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +16,9 @@ export default async function FeedbackPage({
   const { page } = await searchParams;
   const currentPage = Math.max(1, parseInt(page ?? "1"));
   const take = currentPage * PAGE_SIZE;
+
+  const session = await requireSession();
+  const user = session.user as any;
 
   const [items, total, products] = await Promise.all([
     prisma.productFeedback.findMany({
@@ -36,7 +41,15 @@ export default async function FeedbackPage({
           <li key={f.id} className="bg-white rounded-xl border p-3 text-sm space-y-2">
             <div className="flex items-center justify-between">
               <p className="font-medium">{f.product?.name ?? "商品未指定"}</p>
-              <DeleteFeedbackButton id={f.id} />
+              {(f.createdBy === (user.memberId ?? user.email) || user.role === "admin") && (
+                <div className="flex gap-1">
+                  <EditFeedbackItem
+                    feedback={{ id: f.id, productId: f.productId, goodPoint: f.goodPoint, improvementPoint: f.improvementPoint, customerComment: f.customerComment }}
+                    products={products}
+                  />
+                  <DeleteFeedbackButton id={f.id} />
+                </div>
+              )}
             </div>
             {f.goodPoint && <p className="text-gray-600">👍 {f.goodPoint}</p>}
             {f.improvementPoint && <p className="text-gray-600">✏️ {f.improvementPoint}</p>}
