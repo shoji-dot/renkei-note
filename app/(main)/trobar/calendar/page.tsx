@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
-import { createCalendarItem, deleteCalendarItem } from "./actions";
+import { createCalendarItem } from "./actions";
+import DeleteCalendarButton from "./DeleteCalendarButton";
 
 export const dynamic = "force-dynamic";
 
@@ -73,16 +74,7 @@ export default async function CalendarPage({
                         {it.requiredMaterials && <p className="text-xs text-gray-400">資材: {it.requiredMaterials}</p>}
                         {it.note && <p className="text-xs text-gray-400">備考: {it.note}</p>}
                       </div>
-                      <form action={deleteCalendarItem}>
-                        <input type="hidden" name="id" value={it.id} />
-                        <button
-                          type="submit"
-                          className="text-xs text-red-400 hover:text-red-600 whitespace-nowrap"
-                          onClick={(e) => { if (!confirm("削除しますか？")) e.preventDefault(); }}
-                        >
-                          削除
-                        </button>
-                      </form>
+                      <DeleteCalendarButton id={it.id} />
                     </div>
                   </li>
                 ))}
