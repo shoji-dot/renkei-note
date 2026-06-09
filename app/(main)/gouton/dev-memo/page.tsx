@@ -4,9 +4,20 @@ import StatusSelect from "./StatusSelect";
 
 export const dynamic = "force-dynamic";
 
-export default async function DevMemoPage() {
-  const [items, products] = await Promise.all([
-    prisma.productDevMemo.findMany({ orderBy: { createdAt: "desc" }, take: 30, include: { proposer: true, relatedProduct: true } }),
+const PAGE_SIZE = 20;
+
+export default async function DevMemoPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page } = await searchParams;
+  const currentPage = Math.max(1, parseInt(page ?? "1"));
+  const take = currentPage * PAGE_SIZE;
+
+  const [items, total, products] = await Promise.all([
+    prisma.productDevMemo.findMany({ orderBy: { createdAt: "desc" }, take, include: { proposer: true, relatedProduct: true } }),
+    prisma.productDevMemo.count(),
     prisma.product.findMany({ orderBy: { name: "asc" } }),
   ]);
 
@@ -43,6 +54,15 @@ export default async function DevMemoPage() {
         ))}
         {items.length === 0 && <p className="text-sm text-gray-400">まだメモがありません</p>}
       </ul>
+
+      {total > take && (
+        <a
+          href={`?page=${currentPage + 1}`}
+          className="block w-full text-center text-sm text-gray-500 border rounded-xl py-2 bg-white"
+        >
+          もっと見る（残り {total - take} 件）
+        </a>
+      )}
     </div>
   );
 }

@@ -16,7 +16,7 @@ export default async function TopPage() {
     prisma.post.findMany({
       where: { type: { in: ["topic", "problem", "idea"] } },
       orderBy: { createdAt: "desc" },
-      take: 30,
+      take: 15,
       include: { author: true, images: { take: 1 } },
     }),
     prisma.task.findMany({
@@ -72,7 +72,10 @@ export default async function TopPage() {
         const items = posts.filter((p) => p.type === sec.type);
         return (
           <section key={sec.type}>
-            <h2 className="font-semibold text-sm text-gray-600 mb-2">{sec.title}</h2>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-semibold text-sm text-gray-600">{sec.title}</h2>
+              <Link href={`/posts/list?type=${sec.type}`} className="text-xs text-gray-400">すべて見る</Link>
+            </div>
             {items.length === 0 ? (
               <p className="text-sm text-gray-400">まだ投稿がありません</p>
             ) : (

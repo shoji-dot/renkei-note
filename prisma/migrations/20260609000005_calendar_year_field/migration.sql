@@ -1,0 +1,1 @@
+ALTER TABLE "manufacturing_calendar" ADD COLUMN "year" INTEGER NOT NULL DEFAULT 2026;

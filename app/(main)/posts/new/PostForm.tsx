@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { POST_TYPES, POST_CATEGORIES } from "@/lib/types";
+import { POST_TYPES } from "@/lib/types";
 
-export default function PostForm() {
+export default function PostForm({ defaultType }: { defaultType?: string }) {
   const router = useRouter();
-  const [type, setType] = useState<string>(POST_TYPES[0].value);
-  const [category, setCategory] = useState<string>("");
+  const initialType = POST_TYPES.find((t) => t.value === defaultType)?.value ?? POST_TYPES[0].value;
+  const [type, setType] = useState<string>(initialType);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [files, setFiles] = useState<File[]>([]);
@@ -16,15 +16,14 @@ export default function PostForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim() || !content.trim()) {
-      setError("タイトルと内容を入力してください");
+    if (!content.trim()) {
+      setError("内容を入力してください");
       return;
     }
     setSubmitting(true);
     setError("");
 
     try {
-      // 画像を先にアップロード
       const imageUrls: string[] = [];
       for (const file of files) {
         const fd = new FormData();
@@ -38,7 +37,7 @@ export default function PostForm() {
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, category: category || null, title, content, imageUrls }),
+        body: JSON.stringify({ type, title: title.trim() || null, content, imageUrls }),
       });
       if (!res.ok) throw new Error("投稿に失敗しました");
       const data = await res.json();
@@ -66,27 +65,12 @@ export default function PostForm() {
       </div>
 
       <div>
-        <label className="block text-sm text-gray-600 mb-1">分類（任意）</label>
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="w-full border rounded-lg px-3 py-2 text-base"
-        >
-          <option value="">選択しない</option>
-          {POST_CATEGORIES.map((c) => (
-            <option key={c.value} value={c.value}>{c.label}</option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label className="block text-sm text-gray-600 mb-1">タイトル</label>
+        <label className="block text-sm text-gray-600 mb-1">タイトル（任意）</label>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 text-base"
           placeholder="例：女性客が多かった"
-          required
         />
       </div>
 

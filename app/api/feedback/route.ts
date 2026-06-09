@@ -8,29 +8,24 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
 
   const user = session.user as any;
-  const body = await req.json();
-  const { type, category, title, content, imageUrls } = body;
+  const { productId, goodPoint, improvementPoint, customerComment, imageUrls } = await req.json();
 
-  if (!type || !content) {
+  if (!goodPoint?.trim() && !improvementPoint?.trim() && !customerComment?.trim()) {
     return NextResponse.json({ error: "必須項目が未入力です" }, { status: 400 });
   }
 
-  const post = await prisma.post.create({
+  await prisma.productFeedback.create({
     data: {
-      type,
-      category: null,
-      title: title || content.slice(0, 30),
-      body: content,
-      authorId: user.memberId ?? null,
+      productId: productId || null,
+      goodPoint: goodPoint?.trim() || null,
+      improvementPoint: improvementPoint?.trim() || null,
+      customerComment: customerComment?.trim() || null,
       createdBy: user.memberId ?? user.email,
       images: {
-        create: (imageUrls ?? []).map((url: string) => ({
-          imageUrl: url,
-          createdBy: user.memberId ?? user.email,
-        })),
+        create: (imageUrls ?? []).map((url: string) => ({ imageUrl: url })),
       },
     },
   });
 
-  return NextResponse.json({ id: post.id });
+  return NextResponse.json({ ok: true });
 }

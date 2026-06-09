@@ -1,16 +1,21 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { requireSession } from "@/lib/session";
 import { POST_TYPES, POST_CATEGORIES, IDEA_STATUSES, labelOf } from "@/lib/types";
+import DeleteButton from "./DeleteButton";
 
 export const dynamic = "force-dynamic";
 
 export default async function PostDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const post = await prisma.post.findUnique({
-    where: { id },
-    include: { author: true, images: true },
-  });
+  const [post, session] = await Promise.all([
+    prisma.post.findUnique({ where: { id }, include: { author: true, images: true } }),
+    requireSession(),
+  ]);
   if (!post) notFound();
+
+  const user = session.user as any;
+  const canDelete = post.authorId === user.memberId || user.role === "admin";
 
   const date = new Date(post.createdAt);
 
@@ -42,9 +47,12 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
         </div>
         <h1 className="text-lg font-bold">{post.title}</h1>
         <p className="text-gray-700 whitespace-pre-wrap">{post.body}</p>
-        <p className="text-xs text-gray-400 pt-2">
-          投稿者: {post.author?.name ?? "不明"} ・ {date.getFullYear()}/{date.getMonth() + 1}/{date.getDate()}
-        </p>
+        <div className="flex items-center justify-between pt-2">
+          <p className="text-xs text-gray-400">
+            投稿者: {post.author?.name ?? "不明"} ・ {date.getFullYear()}/{date.getMonth() + 1}/{date.getDate()}
+          </p>
+          {canDelete && <DeleteButton postId={post.id} />}
+        </div>
       </div>
     </article>
   );

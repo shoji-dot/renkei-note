@@ -4,9 +4,20 @@ import StatusSelect from "./StatusSelect";
 
 export const dynamic = "force-dynamic";
 
-export default async function BrewingPage() {
-  const [items, products, members] = await Promise.all([
-    prisma.brewingProgress.findMany({ orderBy: { createdAt: "desc" }, take: 30, include: { product: true, assignee: true } }),
+const PAGE_SIZE = 20;
+
+export default async function BrewingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page } = await searchParams;
+  const currentPage = Math.max(1, parseInt(page ?? "1"));
+  const take = currentPage * PAGE_SIZE;
+
+  const [items, total, products, members] = await Promise.all([
+    prisma.brewingProgress.findMany({ orderBy: { createdAt: "desc" }, take, include: { product: true, assignee: true } }),
+    prisma.brewingProgress.count(),
     prisma.product.findMany({ orderBy: { name: "asc" } }),
     prisma.member.findMany({ orderBy: { name: "asc" } }),
   ]);
@@ -79,6 +90,15 @@ export default async function BrewingPage() {
         ))}
         {items.length === 0 && <p className="text-sm text-gray-400">まだ登録がありません</p>}
       </ul>
+
+      {total > take && (
+        <a
+          href={`?page=${currentPage + 1}`}
+          className="block w-full text-center text-sm text-gray-500 border rounded-xl py-2 bg-white"
+        >
+          もっと見る（残り {total - take} 件）
+        </a>
+      )}
     </div>
   );
 }

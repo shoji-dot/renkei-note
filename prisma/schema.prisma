@@ -159,6 +159,7 @@ model Task {
 // ===== トロバール機能 =====
 model ManufacturingCalendar {
   id                String   @id @default(cuid())
+  year              Int      @default(2026)
   month             Int
   workContent       String
   requiredPeople    Int?
@@ -200,17 +201,28 @@ model BrewingProgress {
 
 // ===== グートン機能 =====
 model ProductFeedback {
-  id                String   @id @default(cuid())
+  id                String            @id @default(cuid())
   productId         String?
-  product           Product? @relation(fields: [productId], references: [id])
+  product           Product?          @relation(fields: [productId], references: [id])
   goodPoint         String?
   improvementPoint  String?
   customerComment   String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
   createdBy         String?
+  images            FeedbackImage[]
 
   @@map("product_feedback")
+}
+
+model FeedbackImage {
+  id         String          @id @default(cuid())
+  feedbackId String
+  feedback   ProductFeedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  imageUrl   String
+  createdAt  DateTime        @default(now())
+
+  @@map("feedback_images")
 }
 
 enum DevMemoStatus {
