@@ -16,10 +16,20 @@ export default async function CalendarPage({
   const { year } = await searchParams;
   const selectedYear = parseInt(year ?? String(THIS_YEAR));
 
-  const items = await prisma.manufacturingCalendar.findMany({
-    where: { year: selectedYear },
-    orderBy: { month: "asc" },
-  });
+  const [items, pastMaterials] = await Promise.all([
+    prisma.manufacturingCalendar.findMany({
+      where: { year: selectedYear },
+      orderBy: { month: "asc" },
+    }),
+    prisma.manufacturingCalendar.findMany({
+      where: { requiredMaterials: { not: null } },
+      select: { requiredMaterials: true },
+      distinct: ["requiredMaterials"],
+      orderBy: { createdAt: "desc" },
+      take: 30,
+    }),
+  ]);
+  const materialOptions = [...new Set(pastMaterials.map((m) => m.requiredMaterials).filter(Boolean))];
 
   return (
     <div className="space-y-6">
@@ -50,7 +60,15 @@ export default async function CalendarPage({
         </div>
         <input name="workContent" required placeholder="作業内容" className="w-full border rounded-lg px-3 py-2 text-base" />
         <input name="requiredMembers" placeholder="必要メンバー" className="w-full border rounded-lg px-3 py-2 text-base" />
-        <input name="requiredMaterials" placeholder="必要資材" className="w-full border rounded-lg px-3 py-2 text-base" />
+        <datalist id="materials-history">
+          {materialOptions.map((m) => <option key={m} value={m!} />)}
+        </datalist>
+        <input
+          name="requiredMaterials"
+          list="materials-history"
+          placeholder="必要資材"
+          className="w-full border rounded-lg px-3 py-2 text-base"
+        />
         <input name="note" placeholder="備考" className="w-full border rounded-lg px-3 py-2 text-base" />
         <button className="bg-gray-900 text-white rounded-lg px-4 py-2 text-sm">追加</button>
       </form>

@@ -25,6 +25,13 @@ export const IDEA_STATUSES = [
   { value: "fusaiyo", label: "不採用" },
 ] as const;
 
+export const BREWING_STATUSES = [
+  { value: "junbichu", label: "準備中" },
+  { value: "shikomichu", label: "仕込み中" },
+  { value: "jukuseichu", label: "熟成中" },
+  { value: "kansei", label: "完成" },
+] as const;
+
 export const TASK_STATUSES = [
   { value: "michakushu", label: "未着手" },
   { value: "shinkochu", label: "進行中" },
