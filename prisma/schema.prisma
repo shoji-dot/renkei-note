@@ -48,7 +48,6 @@ model Member {
   posts             Post[]             @relation("PostAuthor")
   tasks             Task[]             @relation("TaskAssignee")
   brewingProgresses BrewingProgress[]  @relation("BrewingAssignee")
-  devMemos          ProductDevMemo[]   @relation("DevMemoProposer")
 
   @@map("members")
 }
@@ -64,7 +63,6 @@ model Product {
 
   posts             Post[]
   feedbacks         ProductFeedback[]
-  devMemos          ProductDevMemo[]
   brewingProgresses BrewingProgress[]
 
   @@map("products")
@@ -99,10 +97,12 @@ enum PostCategory {
 }
 
 enum IdeaStatus {
-  shinki     // 新規
-  kentochu   // 検討中
-  saiyo      // 採用
-  horyu      // 保留
+  shinki      // 新規
+  kentochu    // 検討中
+  shisakuchu  // 試作中
+  saiyo       // 採用
+  horyu       // 保留
+  fusaiyo     // 不採用
 }
 
 model Post {
@@ -225,27 +225,3 @@ model FeedbackImage {
   @@map("feedback_images")
 }
 
-enum DevMemoStatus {
-  shinki    // 新規
-  kentochu  // 検討中
-  shisakuchu // 試作中
-  saiyo     // 採用
-  fusaiyo   // 不採用
-}
-
-model ProductDevMemo {
-  id              String        @id @default(cuid())
-  ideaName        String
-  proposerId      String?
-  proposer        Member?       @relation("DevMemoProposer", fields: [proposerId], references: [id])
-  reason          String?
-  customerRequest String?
-  relatedProductId String?
-  relatedProduct  Product?      @relation(fields: [relatedProductId], references: [id])
-  status          DevMemoStatus @default(shinki)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  createdBy       String?
-
-  @@map("product_dev_memo")
-}

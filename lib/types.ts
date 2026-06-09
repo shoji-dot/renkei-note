@@ -19,8 +19,10 @@ export const POST_CATEGORIES = [
 export const IDEA_STATUSES = [
   { value: "shinki", label: "新規" },
   { value: "kentochu", label: "検討中" },
+  { value: "shisakuchu", label: "試作中" },
   { value: "saiyo", label: "採用" },
   { value: "horyu", label: "保留" },
+  { value: "fusaiyo", label: "不採用" },
 ] as const;
 
 export const TASK_STATUSES = [
