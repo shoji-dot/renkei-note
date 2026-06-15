@@ -39,7 +39,7 @@ export default async function PostListPage({
       where,
       orderBy: { createdAt: "desc" },
       take,
-      include: { author: true, images: { take: 1 } },
+      include: { author: true, images: { take: 1 }, _count: { select: { reactions: true } } },
     }),
     prisma.post.count({ where }),
   ]);
@@ -111,6 +111,7 @@ export default async function PostListPage({
             authorName={p.author?.name}
             createdAt={p.createdAt}
             thumbnailUrl={p.images[0]?.imageUrl}
+            reactionCount={p._count.reactions}
           />
         ))}
         {posts.length === 0 && (

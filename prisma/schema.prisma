@@ -53,6 +53,7 @@ model Member {
   posts             Post[]             @relation("PostAuthor")
   tasks             Task[]             @relation("TaskAssignee")
   brewingProgresses BrewingProgress[]  @relation("BrewingAssignee")
+  reactions         PostReaction[]
 
   @@map("members")
 }
@@ -112,6 +113,7 @@ model Post {
   authorId   String?
   author     Member?       @relation("PostAuthor", fields: [authorId], references: [id])
   images     PostImage[]
+  reactions  PostReaction[]
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
   createdBy  String?
@@ -192,6 +194,26 @@ model BrewingProgress {
   createdBy         String?
 
   @@map("brewing_progress")
+}
+
+// ===== リアクション =====
+enum ReactionType {
+  like           // 👍 いいね
+  confirmed      // ✅ 確認しました
+  will_contact   // 📞 後で連絡します
+}
+
+model PostReaction {
+  id         String       @id @default(cuid())
+  postId     String
+  post       Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  memberId   String
+  member     Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  type       ReactionType
+  createdAt  DateTime     @default(now())
+
+  @@unique([postId, memberId])
+  @@map("post_reactions")
 }
 
 // ===== グートン機能 =====

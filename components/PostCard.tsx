@@ -12,6 +12,7 @@ type PostCardProps = {
   createdAt: Date | string;
   thumbnailUrl?: string | null;
   compact?: boolean;
+  reactionCount?: number;
 };
 
 export default function PostCard({
@@ -25,6 +26,7 @@ export default function PostCard({
   createdAt,
   thumbnailUrl,
   compact = false,
+  reactionCount,
 }: PostCardProps) {
   const date = new Date(createdAt);
   const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
@@ -44,7 +46,12 @@ export default function PostCard({
             {labelOf(POST_TYPES, type)}
           </span>
           <h3 className="font-medium text-sm mt-1 line-clamp-2">{title}</h3>
-          <p className="text-xs text-gray-400 mt-0.5">{authorName ?? "不明"} ・ {dateStr}</p>
+          <p className="text-xs text-gray-400 mt-0.5">
+            {authorName ?? "不明"} ・ {dateStr}
+            {reactionCount != null && reactionCount > 0 && (
+              <span className="ml-1.5">・ 💬 {reactionCount}</span>
+            )}
+          </p>
         </div>
       </Link>
     );
@@ -80,6 +87,9 @@ export default function PostCard({
           <p className="text-sm text-gray-500 truncate">{body}</p>
           <p className="text-xs text-gray-400 mt-1">
             {authorName ?? "不明"} ・ {dateStr}
+            {reactionCount != null && reactionCount > 0 && (
+              <span className="ml-1.5">・ 💬 {reactionCount}</span>
+            )}
           </p>
         </div>
       </div>

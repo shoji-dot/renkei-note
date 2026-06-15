@@ -4,13 +4,21 @@ import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/session";
 import { POST_TYPES, POST_CATEGORIES, IDEA_STATUSES, labelOf } from "@/lib/types";
 import DeleteButton from "./DeleteButton";
+import ReactionPanel from "@/components/ReactionPanel";
 
 export const dynamic = "force-dynamic";
 
 export default async function PostDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [post, session] = await Promise.all([
-    prisma.post.findUnique({ where: { id }, include: { author: true, images: true } }),
+    prisma.post.findUnique({
+      where: { id },
+      include: {
+        author: true,
+        images: true,
+        reactions: { include: { member: { select: { id: true, name: true } } } },
+      },
+    }),
     requireSession(),
   ]);
   if (!post) notFound();
@@ -63,6 +71,15 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
               <DeleteButton postId={post.id} />
             </div>
           )}
+        </div>
+
+        {/* リアクション */}
+        <div className="pt-3 border-t mt-3">
+          <ReactionPanel
+            postId={post.id}
+            initialReactions={post.reactions as any}
+            myMemberId={user.memberId ?? null}
+          />
         </div>
       </div>
     </article>
