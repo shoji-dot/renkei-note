@@ -152,7 +152,7 @@ export default async function TopPage() {
         </section>
 
         {/* 仕込み進捗 */}
-        <section className="bg-white rounded-xl border p-3 space-y-2">
+        <section className="col-span-2 bg-white rounded-xl border p-3 space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-xs text-gray-600">仕込み進捗</h2>
             <Link href="/trobar/brewing" className="text-xs text-gray-400">{allLabel(brewingCount)}</Link>
