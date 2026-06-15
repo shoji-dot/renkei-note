@@ -44,6 +44,7 @@ export default function HeaderNav({
   // グートンデリ
   if (isGouton) {
     links.push({ href: "/gouton/shop-status", label: "店舗状況" });
+    links.push({ href: "/gouton/other-store", label: "他店情報" });
   }
 
   // 管理者のみ

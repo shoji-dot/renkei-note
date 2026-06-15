@@ -5,6 +5,7 @@ export const POST_TYPES = [
   { value: "problem", label: "困りごと" },
   { value: "idea", label: "改善アイデア" },
   { value: "shop_status", label: "店舗状況" },
+  { value: "other_store", label: "他店情報" },
 ] as const;
 
 export const POST_CATEGORIES = [

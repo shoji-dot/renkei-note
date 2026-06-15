@@ -79,6 +79,7 @@ enum PostType {
   problem      // 困りごと
   idea         // 改善アイデア
   shop_status  // 店舗状況(グートン)
+  other_store  // 他店情報(グートン)
 }
 
 enum PostCategory {

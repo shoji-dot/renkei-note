@@ -15,6 +15,7 @@ export default async function TopPage() {
   const [
     tasks,
     shopStatusPosts, shopStatusCount,
+    otherStorePosts, otherStoreCount,
     topicPosts, topicCount,
     problemPosts, problemCount,
     ideaPosts, ideaCount,
@@ -24,6 +25,8 @@ export default async function TopPage() {
     prisma.task.findMany({ where: { status: { not: "kanryo" } }, orderBy: { dueDate: "asc" }, take: 5, include: { assignee: true } }),
     prisma.post.findMany({ where: { type: "shop_status" }, orderBy: { createdAt: "desc" }, take: 1, include: { author: true, images: { take: 1 } } }),
     prisma.post.count({ where: { type: "shop_status" } }),
+    prisma.post.findMany({ where: { type: "other_store" }, orderBy: { createdAt: "desc" }, take: 1, include: { author: true, images: { take: 1 } } }),
+    prisma.post.count({ where: { type: "other_store" } }),
     prisma.post.findMany({ where: { type: "topic" }, orderBy: { createdAt: "desc" }, take: 1, include: { author: true, images: { take: 1 } } }),
     prisma.post.count({ where: { type: "topic" } }),
     prisma.post.findMany({ where: { type: "problem" }, orderBy: { createdAt: "desc" }, take: 1, include: { author: true, images: { take: 1 } } }),
@@ -81,6 +84,22 @@ export default async function TopPage() {
               category={shopStatusPosts[0].category} title={shopStatusPosts[0].title} body={shopStatusPosts[0].body}
               authorName={shopStatusPosts[0].author?.name} createdAt={shopStatusPosts[0].createdAt}
               thumbnailUrl={shopStatusPosts[0].images[0]?.imageUrl} compact />
+          )}
+        </section>
+
+        {/* 他店情報 */}
+        <section className="bg-white rounded-xl border p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-xs text-gray-600">他店情報</h2>
+            <Link href="/gouton/other-store" className="text-xs text-gray-400">{allLabel(otherStoreCount)}</Link>
+          </div>
+          {otherStorePosts.length === 0 ? (
+            <p className="text-xs text-gray-400">まだありません</p>
+          ) : (
+            <PostCard key={otherStorePosts[0].id} id={otherStorePosts[0].id} type={otherStorePosts[0].type}
+              category={otherStorePosts[0].category} title={otherStorePosts[0].title} body={otherStorePosts[0].body}
+              authorName={otherStorePosts[0].author?.name} createdAt={otherStorePosts[0].createdAt}
+              thumbnailUrl={otherStorePosts[0].images[0]?.imageUrl} compact />
           )}
         </section>
 
