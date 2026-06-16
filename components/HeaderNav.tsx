@@ -32,7 +32,6 @@ export default function HeaderNav({
     { href: "/tasks", label: "タスク" },
     { href: "/images", label: "写真" },
     { href: "/gouton/feedback", label: "商品フィードバック" },
-    { href: "/settings", label: "⚙ 設定" },
   ];
 
   // 八ヶ岳トロバール
@@ -46,6 +45,9 @@ export default function HeaderNav({
     links.push({ href: "/gouton/shop-status", label: "店舗状況" });
     links.push({ href: "/gouton/other-store", label: "他店情報" });
   }
+
+  // 設定は常に最右端
+  links.push({ href: "/settings", label: "⚙ 設定" });
 
   return (
     <header className="bg-white border-b sticky top-0 z-10">
