@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { sendFeedbackNotificationAsync } from "@/lib/mailer";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -26,6 +27,9 @@ export async function POST(req: NextRequest) {
       },
     },
   });
+
+  // 通知メール送信（非同期・失敗しても登録は成功扱い）
+  sendFeedbackNotificationAsync({ senderId: user.id, senderName: user.name });
 
   return NextResponse.json({ ok: true });
 }

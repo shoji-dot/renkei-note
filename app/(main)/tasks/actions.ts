@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { sendTaskNotificationAsync } from "@/lib/mailer";
 
 export async function createTask(formData: FormData) {
   const session = await getServerSession(authOptions);
@@ -23,6 +24,10 @@ export async function createTask(formData: FormData) {
       createdBy: user.memberId ?? user.email,
     },
   });
+
+  // 通知メール送信（非同期・失敗してもタスク作成は成功扱い）
+  sendTaskNotificationAsync({ senderId: user.id, senderName: user.name, taskTitle: title });
+
   revalidatePath("/tasks");
 }
 
