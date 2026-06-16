@@ -32,7 +32,7 @@ export default function HeaderNav({
     { href: "/tasks", label: "タスク" },
     { href: "/images", label: "写真" },
     { href: "/gouton/feedback", label: "商品フィードバック" },
-    { href: "/my-settings", label: "🔔 通知設定" },
+    { href: "/settings", label: "⚙ 設定" },
   ];
 
   // 八ヶ岳トロバール
@@ -45,11 +45,6 @@ export default function HeaderNav({
   if (isGouton) {
     links.push({ href: "/gouton/shop-status", label: "店舗状況" });
     links.push({ href: "/gouton/other-store", label: "他店情報" });
-  }
-
-  // 管理者のみ
-  if (role === "admin") {
-    links.push({ href: "/settings", label: "⚙ 設定" });
   }
 
   return (

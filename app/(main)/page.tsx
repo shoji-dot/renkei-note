@@ -6,8 +6,15 @@ import { TASK_STATUSES, BREWING_STATUSES, labelOf } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
+const REACTION_EMOJI: Record<string, string> = {
+  like: "👍",
+  confirmed: "✅",
+  will_contact: "📞",
+};
+
 export default async function TopPage() {
-  await requireSession();
+  const session = await requireSession();
+  const user = session.user as any;
 
   const thisYear = new Date().getFullYear();
   const thisMonth = new Date().getMonth() + 1;
@@ -21,6 +28,7 @@ export default async function TopPage() {
     ideaPosts, ideaCount,
     brewing, brewingCount,
     calendar,
+    myReactions,
   ] = await Promise.all([
     prisma.task.findMany({ where: { status: { not: "kanryo" } }, orderBy: { dueDate: "asc" }, take: 5, include: { assignee: true } }),
     prisma.post.findMany({ where: { type: "shop_status" }, orderBy: { createdAt: "desc" }, take: 1, include: { author: true, images: { take: 1 } } }),
@@ -36,6 +44,14 @@ export default async function TopPage() {
     prisma.brewingProgress.findMany({ where: { status: { not: "kansei" } }, orderBy: { createdAt: "desc" }, take: 1, include: { product: true } }),
     prisma.brewingProgress.count({ where: { status: { not: "kansei" } } }),
     prisma.manufacturingCalendar.findMany({ where: { year: thisYear, month: { gte: thisMonth } }, orderBy: { month: "asc" }, take: 3 }),
+    user.memberId
+      ? prisma.postReaction.findMany({
+          where: { memberId: user.memberId },
+          orderBy: { createdAt: "desc" },
+          take: 10,
+          include: { post: { select: { id: true, title: true } } },
+        })
+      : Promise.resolve([]),
   ]);
 
   const allLabel = (count: number) => count > 0 ? `すべて（${count}件）` : "すべて";
@@ -186,6 +202,26 @@ export default async function TopPage() {
                   <span className="text-gray-400 shrink-0">{it.month}月</span>
                   <span className="font-medium">{it.workContent}</span>
                   {it.requiredMaterials && <span className="text-gray-400 truncate">{it.requiredMaterials}</span>}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* 自分のリアクション */}
+        {myReactions.length > 0 && (
+          <section className="col-span-2 bg-white rounded-xl border p-3 space-y-2">
+            <h2 className="font-semibold text-xs text-gray-600">自分のリアクション</h2>
+            <ul className="space-y-1.5">
+              {myReactions.map((r) => (
+                <li key={r.id}>
+                  <Link href={`/posts/${r.post.id}`} className="flex items-center gap-2 text-xs hover:bg-gray-50 rounded-lg px-1 py-0.5">
+                    <span className="text-base shrink-0">{REACTION_EMOJI[r.type] ?? "👍"}</span>
+                    <span className="line-clamp-1 text-gray-800">{r.post.title}</span>
+                    <span className="ml-auto text-gray-400 shrink-0">
+                      {new Date(r.createdAt).getMonth() + 1}/{new Date(r.createdAt).getDate()}
+                    </span>
+                  </Link>
                 </li>
               ))}
             </ul>
